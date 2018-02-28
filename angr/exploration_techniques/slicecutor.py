@@ -29,6 +29,30 @@ class Slicecutor(ExplorationTechnique):
         # this is the stash containing the states that we cut due to the slicing
         self.cut_stash_name = cut_stash_name
 
+    ################################
+    #   PRIVATE METHODS
+    ################################
+
+    # TODO: please remove me
+    def _hack_state_step(self, simgr, state, original_stash, whitelist=None, last_statement=None):
+        tmp_stash_name = "tmp"
+        if not simgr.stashes[tmp_stash_name]:
+            simgr.stashes[tmp_stash_name] = []
+
+        simgr.stashes[tmp_stash_name].append(state)
+
+        simgr._one_step(stash=tmp_stash_name, whitelist=whitelist, last_stmt=last_statement)
+
+        for state in simgr.stashes[tmp_stash_name]:
+            simgr.stashes[original_stash].append(state)
+
+        del(simgr.stashes[tmp_stash_name])
+
+
+    ################################
+    #   PUBLIC METHODS
+    ################################
+
     def setup(self, simgr):
         """
         Perform any initialization on this manager you might need to do.
@@ -45,8 +69,16 @@ class Slicecutor(ExplorationTechnique):
         Otherwise, return a dict of stashes to merge into the simulation manager. All the states
         will be added to the SimManager's stashes based on the mapping in the returned dict.
         """
-        return None
+        state_whitelist = self._annotated_cfg.get_whitelisted_statements(state.addr)
+        state_last_statement = self._annotated_cfg.get_last_statement_index(state.addr)
 
+        l.debug("Stepping {}".format(state))
+        successors = self.project.factory.successors(state, whitelist=state_whitelist, last_stmt=state_last_statement, **kwargs)
+
+        return {'active': successors.flat_successors,
+                'unconstrained': successors.unconstrained_successors,
+                'unsat': successors.unsat_successors,
+                }
 
     def step(self, simgr, stash, **kwargs):
         """
@@ -55,13 +87,12 @@ class Slicecutor(ExplorationTechnique):
 
         Return the stepped manager.
         """
-        l.debug("Stepping {}...".format(stash))
-
-
-        #whitelist = state._whitelist, last_stmt = state._last_stmt
-        simgr = simgr._one_step(stash=stash, **kwargs)
+        l.debug("Stepping stash \"{}\"...".format(stash))
 
         for state in simgr.stashes[stash]:
+            if not state.history.bbl_addrs:
+                l.debug("State has not been stepped before.")
+                continue
             dst_addr = state.addr
             src_addr = state.history.bbl_addrs[-1]
 
