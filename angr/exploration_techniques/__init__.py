@@ -123,6 +123,7 @@ from .veritesting import Veritesting
 from .oppologist import Oppologist
 from .director import Director, ExecuteAddressGoal, CallFunctionGoal
 from .spiller import Spiller
+from .slicecutor import Slicecutor
 from .manual_mergepoint import ManualMergepoint
 from .tech_builder import TechniqueBuilder
 from ..errors import AngrError, AngrExplorationTechniqueError

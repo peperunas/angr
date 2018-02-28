@@ -89,7 +89,7 @@ class Slicecutor(Surveyor):
 
     def filter_path(self, path):
         l.debug("Checking path %s for filtering...", path)
-        if not self._annotated_cfg.filter_path(path):
+        if not self._annotated_cfg.filter_state(path):
             l.debug("... %s is cut by AnnoCFG explicitly.", path)
             self.cut.append(self.suspend_path(path))
             return False
