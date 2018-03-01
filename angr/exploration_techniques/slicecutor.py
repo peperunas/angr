@@ -72,8 +72,12 @@ class Slicecutor(ExplorationTechnique):
         state_whitelist = self._annotated_cfg.get_whitelisted_statements(state.addr)
         state_last_statement = self._annotated_cfg.get_last_statement_index(state.addr)
 
-        l.debug("Stepping {}".format(state))
-        successors = self.project.factory.successors(state, whitelist=state_whitelist, last_stmt=state_last_statement, **kwargs)
+        l.debug("Stepping state {}".format(state))
+
+        if state_last_statement:
+            successors = self.project.factory.successors(state, whitelist=state_whitelist, last_stmt=state_last_statement, **kwargs)
+        else:
+            successors = self.project.factory.successors(state, whitelist=state_whitelist, **kwargs)
 
         return {'active': successors.flat_successors,
                 'unconstrained': successors.unconstrained_successors,
@@ -88,6 +92,8 @@ class Slicecutor(ExplorationTechnique):
         Return the stepped manager.
         """
         l.debug("Stepping stash \"{}\"...".format(stash))
+
+        simgr._one_step(stash=stash, **kwargs)
 
         for state in simgr.stashes[stash]:
             if not state.history.bbl_addrs:
@@ -105,24 +111,6 @@ class Slicecutor(ExplorationTechnique):
                 simgr.stashes[stash].remove(state)
 
         return simgr
-
-
-    def filter(self, state):
-        """
-        Perform filtering on a state.
-
-        If the state should not be filtered, return None.
-        If the state should be filtered, return the name of the stash to move the state to.
-        If you want to modify the state before filtering it, return a tuple of the stash to move the state to and the
-        modified state.
-        """
-        l.debug("Checking path {} for filtering...".format(state))
-        # TODO: fix AnnotatedCFG.filter_state()
-        # if self._annotated_cfg.filter_state(state):
-        #     l.debug("... {} is cut by AnnoCFG explicitly.".format(state))
-        #     return self.cut_stash_name
-        return None
-
 
     def complete(self, simgr):
         """
