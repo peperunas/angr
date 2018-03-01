@@ -30,26 +30,6 @@ class Slicecutor(ExplorationTechnique):
         self.cut_stash_name = cut_stash_name
 
     ################################
-    #   PRIVATE METHODS
-    ################################
-
-    # TODO: please remove me
-    def _hack_state_step(self, simgr, state, original_stash, whitelist=None, last_statement=None):
-        tmp_stash_name = "tmp"
-        if not simgr.stashes[tmp_stash_name]:
-            simgr.stashes[tmp_stash_name] = []
-
-        simgr.stashes[tmp_stash_name].append(state)
-
-        simgr._one_step(stash=tmp_stash_name, whitelist=whitelist, last_stmt=last_statement)
-
-        for state in simgr.stashes[tmp_stash_name]:
-            simgr.stashes[original_stash].append(state)
-
-        del(simgr.stashes[tmp_stash_name])
-
-
-    ################################
     #   PUBLIC METHODS
     ################################
 
