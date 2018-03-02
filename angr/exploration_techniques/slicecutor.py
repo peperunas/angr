@@ -13,30 +13,29 @@ To use an exploration technique, call ``simgr.use_technique`` with an *instance*
 l = logging.getLogger("angr.exploration_techniques.slicecutor")
 
 class Slicecutor(ExplorationTechnique):
-    def __init__(self, annotated_cfg, start=None, force_taking_exit=False, cut_stash_name="cut"):
+    def __init__(self, annotated_cfg, start=None, cut_stash_name="cut"):
         """
         :param annotated_cfg: the annotated cfg, used to determine what to execute
         :param start: a path (or set of paths) to start the analysis from
-        :param force_taking_exit:
         :param cut_stash_name: the stash where will be placed cut states
         """
         super(Slicecutor, self).__init__()
 
         self._start = start
         self._annotated_cfg = annotated_cfg
-        self._force_taking_exit = force_taking_exit
 
         # this is the stash containing the states that we cut due to the slicing
         self.cut_stash_name = cut_stash_name
 
-    ################################
-    #   PUBLIC METHODS
-    ################################
+################################
+#   PUBLIC METHODS
+################################
 
     def setup(self, simgr):
         """
         Perform any initialization on this manager you might need to do.
         """
+        # adding the cut stash to simgr
         if self.cut_stash_name not in simgr.stashes:
             simgr.stashes[self.cut_stash_name] = []
 
@@ -59,10 +58,12 @@ class Slicecutor(ExplorationTechnique):
         else:
             successors = self.project.factory.successors(state, whitelist=state_whitelist, **kwargs)
 
-        return {'active': successors.flat_successors,
-                'unconstrained': successors.unconstrained_successors,
-                'unsat': successors.unsat_successors,
-                }
+        states_dict = {}
+        states_dict['active'] = successors.flat_successors
+        states_dict['unconstrained'] = successors.flat_successors
+        states_dict['unsat'] = successors.unsat_successors
+
+        return states_dict
 
     def step(self, simgr, stash, **kwargs):
         """
