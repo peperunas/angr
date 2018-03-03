@@ -15,6 +15,8 @@ l = logging.getLogger("angr.exploration_techniques.slicecutor")
 class Slicecutor(ExplorationTechnique):
     def __init__(self, annotated_cfg, start=None, cut_stash_name="cut"):
         """
+        The Slicecutor is a surveyor that executes provided code slices.
+
         :param annotated_cfg: the annotated cfg, used to determine what to execute
         :param start: a path (or set of paths) to start the analysis from
         :param cut_stash_name: the stash where will be placed cut states
